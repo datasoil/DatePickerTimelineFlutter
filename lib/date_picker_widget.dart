@@ -1,5 +1,3 @@
-
-
 import 'package:date_picker_timeline/date_widget.dart';
 import 'package:date_picker_timeline/extra/color.dart';
 import 'package:date_picker_timeline/extra/style.dart';
@@ -40,7 +38,7 @@ class DatePicker extends StatefulWidget {
   final TextStyle dateTextStyle;
 
   /// Current Selected Date
-  final DateTime?/*?*/ initialSelectedDate;
+  final DateTime? /*?*/ initialSelectedDate;
 
   /// Contains the list of inactive dates.
   /// All the dates defined in this List will be deactivated
@@ -112,9 +110,9 @@ class _DatePickerState extends State<DatePicker> {
     }
 
     this.selectedDateStyle =
-      widget.dateTextStyle.copyWith(color: widget.selectedTextColor);
+        widget.dateTextStyle.copyWith(color: widget.selectedTextColor);
     this.selectedMonthStyle =
-      widget.monthTextStyle.copyWith(color: widget.selectedTextColor);
+        widget.monthTextStyle.copyWith(color: widget.selectedTextColor);
     this.selectedDayStyle =
         widget.dayTextStyle.copyWith(color: widget.selectedTextColor);
 
@@ -126,6 +124,16 @@ class _DatePickerState extends State<DatePicker> {
         widget.dayTextStyle.copyWith(color: widget.deactivatedColor);
 
     super.initState();
+  }
+
+  /// Calculate the number of pixels that needs to be scrolled to go to the
+  /// date provided in the argument
+  double _calculateDateOffset(DateTime date) {
+    final startDate = new DateTime(
+        widget.startDate.year, widget.startDate.month, widget.startDate.day);
+
+    int offset = date.difference(startDate).inDays;
+    return (offset * widget.width) + (offset * 6);
   }
 
   @override
@@ -201,6 +209,11 @@ class _DatePickerState extends State<DatePicker> {
               // A date is selected
               if (widget.onDateChange != null) {
                 widget.onDateChange!(selectedDate);
+                _controller.animateTo(
+                    _calculateDateOffset(
+                        _currentDate!.subtract(Duration(days: 3))),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.linear);
               }
               setState(() {
                 _currentDate = selectedDate;
@@ -266,14 +279,15 @@ class DatePickerController {
   void setDateAndAnimate(DateTime date,
       {duration = const Duration(milliseconds: 500), curve = Curves.linear}) {
     assert(_datePickerState != null,
-    'DatePickerController is not attached to any DatePicker View.');
+        'DatePickerController is not attached to any DatePicker View.');
 
     _datePickerState!._controller.animateTo(_calculateDateOffset(date),
         duration: duration, curve: curve);
 
     if (date.compareTo(_datePickerState!.widget.startDate) >= 0 &&
-    date.compareTo(_datePickerState!.widget.startDate.add(
-        Duration(days: _datePickerState!.widget.daysCount))) <= 0) {
+        date.compareTo(_datePickerState!.widget.startDate
+                .add(Duration(days: _datePickerState!.widget.daysCount))) <=
+            0) {
       // date is in the range
       _datePickerState!._currentDate = date;
     }
